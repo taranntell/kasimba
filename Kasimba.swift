@@ -62,7 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // About
         let aboutMenuItem = NSMenuItem(
             title: "About \(appName)",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            action: #selector(showAboutPanel),
             keyEquivalent: ""
         )
         appMenu.addItem(aboutMenuItem)
@@ -163,6 +163,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // This would typically show a preferences window
         // For now, just print to the console
         NSLog("Show preferences")
+    }
+    
+    @objc func showAboutPanel() {
+        let options: [NSApplication.AboutPanelOptionKey: Any] = [
+            .credits: NSAttributedString(string: "Developed by Diego Lopez\n\nA simple tool to convert Windows paths to SMB URLs")
+        ]
+        NSApplication.shared.orderFrontStandardAboutPanel(options: options)
     }
 }
 

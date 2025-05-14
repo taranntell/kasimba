@@ -2,6 +2,12 @@
 
 A simple macOS application that converts Windows paths to SMB addresses. Useful for Mac users who need to access Windows network shares.
 
+<p align="center">
+  <img width="20%" src="/images/kasimba_icon.png" alt="Kasimba Icon" />
+</p>
+
+![Kasimba Path Conversion](images/kasimba_gui.png)
+
 ## Features
 
 - Convert UNC paths (\\\\server\\share\\folder) to SMB URLs (smb://server/share/folder)
