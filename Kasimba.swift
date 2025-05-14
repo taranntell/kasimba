@@ -163,7 +163,7 @@ struct KasimbaApp: App {
 
 struct ContentView: View {
     @State private var windowsPath: String = ""
-    @State private var smbPath: String = ""
+    @State private var smbPath: String = "smb://server/share/folder/file.txt"
     @State private var serverName: String = "server_name"
     @State private var showCopiedAlert: Bool = false
     @State private var showSettings: Bool = false
@@ -172,33 +172,43 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            //Text("Windows Path to SMB Converter")
-            //    .font(.title)
-            //    .fontWeight(.bold)
-            
+            // transforms Windows-style file paths (like \\server\share or C:\folder) into SMB links you can copy or open in Finder
+            VStack(spacing: 4){
+                Text("Convert Windows Paths to SMB URLs")
+                    .font(.title3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fontWeight(.bold)
+                
+                Text("Transforms Windows-style file paths (like \\\\server\\share or C:\\folder) into SMB links you can copy or open in Finder.")
+                //Text("Transforms Windows-style file paths into SMB (Server Message Block) URLs. It supports. Perfect for network access and file sharing, it supports both UNC (\\\\server\\share) and local drive (C:\\folder) paths, with customizable defaults and quick copy//open options.")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                //Text("Windows Path to SMB Converter")
+                //    .font(.title)
+                //    .fontWeight(.bold)
+            }
             VStack(alignment: .leading) {
-                Text("Windows Directory Path:")
+                Text("Windows Path:")
                     .font(.title3)
                     .fontWeight(.medium)
                 
-                // Updated TextField with focused binding for keyboard shortcuts to work properly
-                FocusableTextField(
-                    placeholder: "e.g. \\\\server\\share\\folder\\file.txt",
-                    text: $windowsPath,
-                    onEditingChanged: { _ in convertPath() }
-                )
-                .frame(minWidth: 400)
-                
-                HStack {
-                    Button("Convert to SMB") {
-                        convertPath()
-                        
-                    }
-                    .keyboardShortcut(.return)
+                // Adding a ZStack to overlay the settings button on the TextField
+                ZStack(alignment: .trailing) {
+                    FocusableTextField(
+                        placeholder: "e.g. \\\\server\\share\\folder\\file.txt",
+                        text: $windowsPath,
+                        onEditingChanged: { _ in convertPath() },
+                        onCommit: { convertPath() }
+                    )
+                    .frame(minWidth: 400)
                     
-                    Button("Settings") {
+                    // Settings button positioned at the trailing edge
+                    Button(action: {
                         showSettings.toggle()
+                    }) {
+                        Image(systemName: "gearshape")
+                            .padding(.trailing, 8)
                     }
+                    .buttonStyle(PlainButtonStyle())
                     .popover(isPresented: $showSettings) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Settings")
@@ -216,7 +226,8 @@ struct ContentView: View {
                                     if !windowsPath.isEmpty {
                                         convertPath()
                                     }
-                                }
+                                },
+                                onCommit: {}
                             )
                             .frame(width: 200)
                             
@@ -228,11 +239,11 @@ struct ContentView: View {
                         .frame(width: 250)
                     }
                 }
-            }
-            
-            VStack(alignment: .leading) {
+                
                 Text("SMB Path:")
+                    .font(.title3)
                     .fontWeight(.medium)
+                    .padding(.top, 20)
                 
                 Text(smbPath)
                     .textSelection(.enabled)
@@ -240,8 +251,10 @@ struct ContentView: View {
                     .frame(minWidth: 400, alignment: .leading)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
+                    .foregroundColor(windowsPath.isEmpty ? Color.gray.opacity(0.6) : Color.primary)
                     .background(Color(NSColor.windowBackgroundColor).opacity(0.6))
                     .cornerRadius(5)
+                    
                 
                 HStack {
                     Button("Copy to Clipboard") {
@@ -254,13 +267,13 @@ struct ContentView: View {
                             showCopiedAlert = false
                         }
                     }
-                    .disabled(smbPath.isEmpty || smbPath.starts(with: "Invalid"))
+                    .disabled(windowsPath.isEmpty || smbPath.starts(with: "Invalid"))
                     .keyboardShortcut(KeyEquivalent("c"), modifiers: [.command, .shift])
                     
                     Button("Open in Finder") {
                         openInFinder()
                     }
-                    .disabled(smbPath.isEmpty || smbPath.starts(with: "Invalid"))
+                    .disabled(windowsPath.isEmpty || smbPath.starts(with: "Invalid"))
                     .keyboardShortcut(KeyEquivalent("o"), modifiers: [.command])
                     
                     if showCopiedAlert {
@@ -278,20 +291,24 @@ struct ContentView: View {
                 }
             }
             
-            Spacer()
             
-            HStack {
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
+            
+            VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("Examples:")
                         .font(.caption)
                         .fontWeight(.medium)
+                        .opacity(0.5)
                     
                     Text("\\\\server\\share\\folder → smb://server/share/folder")
                         .font(.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.5)
                     
                     Text("C:\\Users\\Documents → smb://\(serverName)/c$/Users/Documents")
                         .font(.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.5)
                 }
             }
         }
@@ -305,7 +322,8 @@ struct ContentView: View {
         errorMessage = ""
         
         if windowsPath.isEmpty {
-            smbPath = ""
+            // Show placeholder SMB path when no input
+            smbPath = "smb://server/share/path"
             return
         }
         
@@ -376,6 +394,7 @@ struct FocusableTextField: NSViewRepresentable {
     var placeholder: String
     @Binding var text: String
     var onEditingChanged: (Bool) -> Void
+    var onCommit: () -> Void
     
     func makeNSView(context: Context) -> NSTextField {
         let textField = NSTextField()
@@ -410,6 +429,14 @@ struct FocusableTextField: NSViewRepresentable {
         
         func controlTextDidEndEditing(_ notification: Notification) {
             parent.onEditingChanged(false)
+        }
+        
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                parent.onCommit()
+                return true
+            }
+            return false
         }
     }
 }
