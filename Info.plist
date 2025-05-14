@@ -26,5 +26,7 @@
 	<string></string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
+	<key></key>
+	<string></string>
 </dict>
-</plist> 
+</plist>

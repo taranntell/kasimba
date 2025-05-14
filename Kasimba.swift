@@ -47,50 +47,64 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func setupAppMenu(_ mainMenu: NSMenu) {
+        guard let mainMenu = NSApp.mainMenu,
+              let appMenuItem = mainMenu.items.first else {
+            print("Failed to access main menu or app menu item")
+            return
+        }
+
         let appName = "Kasimba"
-        let appMenu = NSMenu(title: "")
-        let appMenuItem = NSMenuItem(title: appName, action: nil, keyEquivalent: "")
+        let appMenu = appMenuItem.submenu ?? NSMenu(title: appName)
         appMenuItem.submenu = appMenu
-        
-        // Add About menu item
-        let aboutMenuItem = NSMenuItem(title: "About \(appName)", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
-        
-        // Add Preferences menu item
-        let preferencesMenuItem = NSMenuItem(title: "Preferences...", action: #selector(showPreferences), keyEquivalent: ",")
-        
-        // Add Services menu item
-        let servicesMenu = NSMenu(title: "Services")
+
+        appMenu.removeAllItems()
+
+        // About
+        let aboutMenuItem = NSMenuItem(
+            title: "About \(appName)",
+            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            keyEquivalent: ""
+        )
+        appMenu.addItem(aboutMenuItem)
+
+        appMenu.addItem(NSMenuItem.separator())
+
+        // Services
+        let servicesMenu = NSMenu()
         let servicesMenuItem = NSMenuItem(title: "Services", action: nil, keyEquivalent: "")
         servicesMenuItem.submenu = servicesMenu
         NSApp.servicesMenu = servicesMenu
-        
-        // Add Hide/Show menu items
-        let hideMenuItem = NSMenuItem(title: "Hide \(appName)", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        let hideOthersMenuItem = NSMenuItem(title: "Hide Others", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
-        hideOthersMenuItem.keyEquivalentModifierMask = [.option, .command]
-        let showAllMenuItem = NSMenuItem(title: "Show All", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
-        
-        // Add Quit menu item
-        let quitMenuItem = NSMenuItem(title: "Quit \(appName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        
-        // Add all items to app menu
-        appMenu.addItem(aboutMenuItem)
-        appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(preferencesMenuItem)
-        appMenu.addItem(NSMenuItem.separator())
         appMenu.addItem(servicesMenuItem)
+
         appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(hideMenuItem)
-        appMenu.addItem(hideOthersMenuItem)
-        appMenu.addItem(showAllMenuItem)
+
+        // Hide
+        appMenu.addItem(NSMenuItem(
+            title: "Hide \(appName)",
+            action: #selector(NSApplication.hide(_:)),
+            keyEquivalent: "h"))
+
+        let hideOthersItem = NSMenuItem(
+            title: "Hide Others",
+            action: #selector(NSApplication.hideOtherApplications(_:)),
+            keyEquivalent: "h")
+        hideOthersItem.keyEquivalentModifierMask = [.option, .command]
+        appMenu.addItem(hideOthersItem)
+
+        appMenu.addItem(NSMenuItem(
+            title: "Show All",
+            action: #selector(NSApplication.unhideAllApplications(_:)),
+            keyEquivalent: ""))
+
         appMenu.addItem(NSMenuItem.separator())
-        appMenu.addItem(quitMenuItem)
-        
-        // Add App menu to main menu if it doesn't exist
-        if mainMenu.item(withTitle: appName) == nil {
-            mainMenu.insertItem(appMenuItem, at: 0)
-        }
+
+        // Quit
+        appMenu.addItem(NSMenuItem(
+            title: "Quit \(appName)",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"))
     }
+    
     
     private func setupEditMenu(_ mainMenu: NSMenu) {
         // Add standard Edit menu
@@ -171,8 +185,8 @@ struct ContentView: View {
     @State private var showError: Bool = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            // transforms Windows-style file paths (like \\server\share or C:\folder) into SMB links you can copy or open in Finder
+        VStack(spacing: 10) {
+            
             VStack(spacing: 4){
                 Text("Convert Windows Paths to SMB URLs")
                     .font(.title3)
@@ -180,11 +194,9 @@ struct ContentView: View {
                     .fontWeight(.bold)
                 
                 Text("Transforms Windows-style file paths (like \\\\server\\share or C:\\folder) into SMB links you can copy or open in Finder.")
-                //Text("Transforms Windows-style file paths into SMB (Server Message Block) URLs. It supports. Perfect for network access and file sharing, it supports both UNC (\\\\server\\share) and local drive (C:\\folder) paths, with customizable defaults and quick copy//open options.")
                     .frame(maxWidth: .infinity, alignment: .leading)
-                //Text("Windows Path to SMB Converter")
-                //    .font(.title)
-                //    .fontWeight(.bold)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             VStack(alignment: .leading) {
                 Text("Windows Path:")
@@ -245,16 +257,18 @@ struct ContentView: View {
                     .fontWeight(.medium)
                     .padding(.top, 20)
                 
-                Text(smbPath)
-                    .textSelection(.enabled)
-                    .padding(10)
-                    .frame(minWidth: 400, alignment: .leading)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .foregroundColor(windowsPath.isEmpty ? Color.gray.opacity(0.6) : Color.primary)
-                    .background(Color(NSColor.windowBackgroundColor).opacity(0.6))
-                    .cornerRadius(5)
-                    
+                ScrollView {
+                    Text(smbPath)
+                        .textSelection(.enabled)
+                        .padding(10)
+                        .frame(minWidth: 400, alignment: .leading)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundColor(windowsPath.isEmpty ? Color.gray.opacity(0.6) : Color.primary)
+                        .background(Color(NSColor.windowBackgroundColor).opacity(0.6))
+                        .cornerRadius(5)
+                }
+                .frame(height: 60)
                 
                 HStack {
                     Button("Copy to Clipboard") {
@@ -289,9 +303,9 @@ struct ContentView: View {
                         .font(.caption)
                         .padding(.top, 5)
                 }
+                
+                Spacer().frame(height: 10)
             }
-            
-            
             
             VStack(alignment: .leading) {
                 VStack(alignment: .leading, spacing: 2) {
