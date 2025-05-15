@@ -95,5 +95,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
+- My colleague Markus T. that asked me for such a tool
 - Built using SwiftUI
 - Inspired by the need to easily access Windows paths on macOS 
