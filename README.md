@@ -20,13 +20,13 @@ A simple macOS application that converts Windows paths to SMB addresses. Useful 
 ## Installation
 
 ### Option 1: Download Pre-built App
-1. Download the latest release from the [Releases](https://github.com/yourusername/kasimba/releases) page
+1. Download the latest release from the [Releases](https://github.com/taranntell/kasimba/releases) page
 2. Open the DMG file and drag Kasimba to your Applications folder
 
 ### Option 2: Build from Source
 1. Clone this repository
    ```
-   git clone https://github.com/yourusername/kasimba.git
+   git clone https://github.com/taranntell/kasimba.git 
    cd kasimba
    ```
 2. Open the project in Xcode
@@ -38,8 +38,8 @@ A simple macOS application that converts Windows paths to SMB addresses. Useful 
 ### Option 3: Create DMG Installer
 1. Run the included DMG creation script
    ```
-   chmod +x create_dmg.sh
-   ./create_dmg.sh
+   chmod +x create_dev_dmg.sh
+   ./create_dev_dmg.sh
    ```
 2. The DMG will be created in the `build` directory
 
@@ -74,6 +74,20 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+### For Developers Building the App
+
+When building the application from source:
+
+1. For development builds: you can leave the `YOUR_TEAM_ID` placeholder in exportOptions.plist as is. The development script will warn you but continue.
+
+2. For distribution builds: replace `YOUR_TEAM_ID` in exportOptions.plist with your Apple Developer Team ID before running the build scripts.
+
+```bash
+# Edit exportOptions.plist and update your Team ID
+# Then run the build script
+./create_dev_dmg.sh
+```
 
 ## License
 

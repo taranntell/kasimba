@@ -23,10 +23,8 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string></string>
+	<string>2025 Kasimba Contributors. Developed by Diego Lopez</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
-	<key></key>
-	<string></string>
 </dict>
 </plist>
